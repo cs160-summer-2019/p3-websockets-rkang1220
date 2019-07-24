@@ -24,13 +24,63 @@
     var canvas = document.getElementById('myCanvas');
     paper.setup(canvas);
     var tool = new paper.Tool();
+  
+    var colors = ['red', 'orange', 'yellow', 'green', 'blue', 'purple', 'pink']
+    var myColor = colors[Math.floor(Math.random() * colors.length)];
 
+    var paths = {};
+    var id = Math.random();
+  
     // getting the URL (you may want to use for Exercise 3)
     var url = window.location.href;
+      
+    // create a new websocket connecting to the server
+    var socket = new WebSocket(
+      'wss://p3-websockets-rkang1220-rkang1220306047.codeanyapp.com/ws/draw');
+    
+    var path = new paper.Path();
+    path.strokeColor = myColor;
+    tool.onMouseMove = function(ev) {
+      var str = {id: id, 
+                 x: ev.point.x, 
+                 y: ev.point.y, 
+                 color: myColor};
+      var message = JSON.stringify(str);
+      socket.send(message);
+      path.add(ev.point);
+    }  
+  
+    // triggered when receiving a message from the server
+    socket.onmessage = function(receivedMessage){
+    if (url.indexOf("?size=large") > -1) {
+      var lmao = JSON.parse(receivedMessage.data);
+      var lol = new paper.Path();
+      lol.strokeColor = lmao.color;
+      for (var i = 0; i < lmao.points.length; i++) {
+        lol.add(new paper.Point(lmao.points[i][0], lmao.points[i][1]));
+      }
+    }
+  }
 
-    // var socket = new WebSocket(
-    //     'wss://<your url here>/ws/draw');
+    // use when sending a message to the server
+    // to be broadcasted to all clients, please add a delay
+      
+    window.addEventListener('devicemotion', (ev) => {
+      if ((Math.abs(ev.acceleration.x) > 10) || (Math.abs(ev.acceleration.y) > 10)) {
+        paper.project.clear();
+      }
+    });
 
+    window.addEventListener('deviceorientation', (ev) => {
+      if (ev.gamma > 75) {
+        path.strokeColor = myColor;
+      }
+    });
+
+  // notify console if socket closes unexpectedly
+  socket.onclose = function(e) {
+      console.error('Chat socket closed unexpectedly');
+  };
 
 </script>
 </html>
