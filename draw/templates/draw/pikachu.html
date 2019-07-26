@@ -1,0 +1,203 @@
+<!DOCTYPE HTML>
+<html lang = "en">
+  <head>
+    <title>Quick Ideas!</title>
+    <meta charset = "UTF-8" name="viewport" content="width=device-width, initial-scale=1.0" />
+  </head>
+  <center>
+  <body>
+     <h1 style="background-color: #00ffff"> Quick Ideas! </h1> 
+     <p> Quickly jot down your ideas before the time runs out. Your ideas will be updated live on the big screen! </p>
+     <div class="container">
+        <div class="row">
+            <div class="col-12" style="text-align: center; font-size: 40px; margin-top: -90px; margin-bottom: -60px">
+              <div id="clockdiv" class="timer"></div> 
+          </div>
+        </div>
+    </div>
+    <form>
+      <div class="all-text">
+      <fieldset>
+        <legend>idea #1</legend>
+        <p>
+          <input type = "text"
+                 id = "myText1"
+                 value = "type here!"
+                 />
+        </p>
+      </fieldset>
+      <fieldset>
+        <legend>idea #2</legend>
+        <p>
+          <input type = "text"
+                 id = "myText2"
+                 value = "type here!" />
+        </p>
+      </fieldset>
+      <fieldset>
+        <legend>idea #3</legend>
+        <p>
+          <input type = "text"
+                 id = "myText"
+                 value = "type here!" 
+                 />
+        </p>
+      </fieldset>
+      <fieldset>
+        <legend>idea #4</legend>
+        <p>
+          <input type = "text"
+                 id = "myText"
+                 value = "type here!" />
+        </p>
+      </fieldset>
+      <fieldset>
+        <legend>idea #5</legend>
+        <p>
+          <input type = "text"
+                 id = "myText"
+                 value = "type here!" />
+        </p>
+      </fieldset>
+      <fieldset>
+        <legend>idea #6</legend>
+        <p>
+          <input type = "text"
+                 id = "myText"
+                 value = "type here!" />
+        </p>
+      </fieldset>
+      <fieldset>
+        <legend>idea #7</legend>
+        <p>
+          <input type = "text"
+                 id = "myText"
+                 value = "type here!" />
+        </p>
+      </fieldset>
+      <fieldset>
+        <legend>idea #8</legend>
+        <p>
+          <input type = "text"
+                 id = "myText"
+                 value = "type here!" />
+        </p>
+      </fieldset>
+      <fieldset>
+        <legend>idea #9</legend>
+        <p>
+          <input type = "text"
+                 id = "myText"
+                 value = "type here!" />
+        </p>
+      </fieldset>
+      <fieldset>
+        <legend>idea #10</legend>
+        <p>
+          <input type = "text"
+                 id = "myText"
+                 value = "type here!" />
+        </p>
+      </fieldset>
+    </form>
+      </div>
+    <script>
+      
+ 
+      
+      var socket = new WebSocket(
+        'wss://p3-websockets-rkang1220-rkang1220306047.codeanyapp.com/ws/draw');
+      
+      var text1 = document.getElementById("myText1");
+      text1.addEventListener("change", (ev) => {
+        var text = (ev.target.value);
+        socket.send(text);
+      })
+      
+      
+      var url = window.location.href;
+      socket.onmessage = function(receivedMessage) {
+        if (url.indexOf("?size=large") > -1) {
+          console.log('oink')
+          console.log(receivedMessage)
+          var lmao = (receivedMessage.data);
+          text1.value = lmao;
+        }
+      }
+      
+      
+//       var text2 = document.getElementById("myText2");
+//       text2.addEventListener("change", (ev) => {
+//         var txt = (ev.target.value);
+//         socket.send(txt);
+//       })
+     
+//       var url = window.location.href;
+//       socket.onmessage = function(receivedMessage) {
+//         if (url.indexOf("?size=large") > -1) {
+//           console.log('oink')
+//           console.log(receivedMessage)
+//           var lmao = (receivedMessage.data);
+//           text2.value = lmao;
+//         }
+//       }
+      
+      
+      var time_in_minutes = 5;
+          var current_time = Date.parse(new Date());
+          var deadline = new Date(current_time + time_in_minutes*60*1000);
+          function time_remaining(endtime){
+            var t = Date.parse(endtime) - Date.parse(new Date());
+            var seconds = Math.floor( (t/1000) % 60 );
+            var minutes = Math.floor( (t/1000/60) % 60 );
+            var hours = Math.floor( (t/(1000*60*60)) % 24 );
+            var days = Math.floor( t/(1000*60*60*24) );
+              if (seconds.toString().length < 2) {
+                  return {'total':t, 'days':days, 'hours':hours, 'minutes':minutes, 'seconds':'0'+seconds};
+              } else {
+                  return {'total':t, 'days':days, 'hours':hours, 'minutes':minutes, 'seconds':seconds};
+              }
+          }
+      
+          var timeinterval;
+          function run_clock(id,endtime) {
+            var clock = document.getElementById(id);
+            function update_clock() {
+              var t = time_remaining(endtime);
+              clock.innerHTML = t.minutes+':' + t.seconds;
+              if (t.total <= 0) { 
+                alert("Time out! Let's see what you and your peers said.");
+                pause_clock();
+                return; 
+              }
+            }
+            update_clock(); // run function once at first to avoid delay
+            timeinterval = setInterval(update_clock,1000);
+          }
+          run_clock('clockdiv', deadline);
+          var paused = false; // is the clock paused?
+          var time_left; // time left on the clock when paused
+          function pause_clock() { 
+            if (!paused) {
+              paused = true;
+              clearInterval(timeinterval); // stop the clock
+              time_left = time_remaining(deadline).total; // preserve remaining time
+            }
+          }
+          function resume_clock() {
+            if (paused) {
+              paused = false;
+              deadline = new Date(Date.parse(new Date()) + time_left);
+              run_clock('clockdiv', deadline);
+            }
+          }
+//       pausebtn.onclick = function() {
+//       pausemodal.style.display = "block";
+//       pause_clock();
+//     }
+   
+      
+      </script>
+    </body>
+  </center>
+</html>
